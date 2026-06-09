@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya</title>
+    
+    <style>
+        /* Mengatur font dan background halaman */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Mengatur kotak kartu profil */
+        .card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        /* Efek saat kartu diarahkan kursor (hover) */
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Mengatur foto profil agar bulat */
+        .profile-image img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #24292e;
+        }
+
+        /* Mengatur teks nama dan sub-judul */
+        h2 {
+            color: #333;
+            margin: 15px 0 5px 0;
+        }
+
+        .title {
+            color: #007bff;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .bio {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        /* Mengatur tombol */
+        .btn {
+            background-color: #24292e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="profile-image">
+            <img src="https://via.placeholder.com/150" alt="Foto Profil">
+        </div>
+        <h2>Halo, Saya Nadiya</h2>
+        <p class="title">Developer & Student</p>
+        <p class="bio">Sedang belajar mengembangkan aplikasi web menggunakan HTML, CSS, dan teknologi keren lainnya.</p>
+        <button class="btn">Hubungi Saya</button>
+    </div>
+
+</body>
+</html>
