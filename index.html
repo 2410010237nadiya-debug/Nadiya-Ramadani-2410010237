@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya</title>
+    
+    <style>
+        /* Mengatur font dan background halaman */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Mengatur kotak kartu profil */
+        .card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        /* Efek saat kartu diarahkan kursor (hover) */
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Mengatur foto profil agar bulat */
+        .profile-image img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #24292e;
+        }
+
+        /* Mengatur teks nama dan sub-judul */
+        h2 {
+            color: #333;
+            margin: 15px 0 5px 0;
+        }
+
+        .title {
+            color: #007bff;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .bio {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        /* Mengatur tombol */
+        .btn {
+            background-color: #24292e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="profile-image">
+            <img src="https://via.placeholder.com/150" alt="Foto Profil">
+        </div>
+        <h2>Halo, Saya Nadiya</h2>
+        <p class="title">Developer & Student</p>
+        <p class="bio">Sedang belajar mengembangkan aplikasi web mengguna<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk Profile Card</title>
+    
+    <style>
+        /* Mengatur background dengan warna gelap cyberpunk */
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background-color: #0a0b10;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(255, 0, 128, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(0, 242, 254, 0.15) 0px, transparent 50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Kotak kartu utama dengan efek Neon Glass */
+        .card {
+            background: rgba(18, 18, 24, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            width: 320px;
+            padding: 40px 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        /* Efek saat kartu di-hover */
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #00f2fe;
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+        }
+
+        /* Frame Foto Profil dengan Dual Neon Glow */
+        .profile-image {
+            position: relative;
+            width: 125px;
+            height: 125px;
+            margin: 0 auto 25px auto;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0a0b10;
+            background: #121218;
+        }
+
+        /* Efek lingkaran neon menyala di belakang foto */
+        .profile-image::before {
+            content: '';
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff007f, #00f2fe);
+            z-index: -1;
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Nama dengan efek teks semi-neon */
+        h2 {
+            color: #ffffff;
+            font-size: 26px;
+            margin: 10px 0 5px 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Status / Pekerjaan dengan warna Neon Cyan */
+        .title {
+            color: #00f2fe;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+        }
+
+        /* Deskripsi Bio */
+        .bio {
+            color: #a0a5b5;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        /* Tombol Neon Pink yang Menyala */
+        .btn {
+            background: transparent;
+            color: #ff007f;
+            border: 2px solid #ff007f;
+            padding: 12px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        /* Efek tombol saat di-hover (langsung terisi warna penuh dan glowing keras) */
+        .btn:hover {
+            background: #ff007f;
+            color: #ffffff;
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.7);
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="profile-image">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Nadiya" alt="Cyber Avatar">
+        </div>
+        <h2>NADIYA</h2>
+        <p class="title">AI & Systems Explorer</p>
+        <p class="bio">Menjelajahi dunia baris kode, logika kecerdasan buatan, dan merakit masa depan digital yang dinamis.</p>
+        <button class="btn">Inisialisasi Kontak</button>
+    </div>
+
+</body>
+</html>kan HTML, CSS, dan teknologi keren lainnya.</p>
+        <button class="btn">Hubungi Saya</button>
+    </div>
+
+</body>
+</html>
