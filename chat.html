@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taurus System Modern UI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600&display=swap" rel="stylesheet">
+  
+  <link class="mar" rel="manifest" href="/static/manifest.json">
+  
+  <style>
+    body { font-family: 'Poppins', sans-serif; transition: background-color 0.3s; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .chat-bubble { animation: slideIn 0.2s ease forwards; }
+    .smooth-scroll { scroll-behavior: smooth; }
+    
+    /* Telegram Drawer Transition */
+    .drawer-transition { transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s; }
+    
+    /* Telegram Style Toggle Switch */
+    .tg-switch { position: relative; display: inline-block; width: 34px; height: 14px; }
+    .tg-switch input { opacity: 0; width: 0; height: 0; }
+    .tg-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #b0b6bc; transition: .2s; border-radius: 14px; }
+    .tg-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: -3px; top: -3px; background-color: #ffffff; transition: .2s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    input:checked + .tg-slider { background-color: #72b1e7; }
+    input:checked + .tg-slider:before { transform: translateX(20px); background-color: #5288c1; }
+
+    /* Custom Scrollbar for Settings */
+    .settings-scroll::-webkit-scrollbar { width: 5px; }
+    .settings-scroll::-webkit-scrollbar-track { background: transparent; }
+    .settings-scroll::-webkit-scrollbar-thumb { background: #b0b6bc; border-radius: 10px; }
+    .dark .settings-scroll::-webkit-scrollbar-thumb { background: #354559; }
+
+    /* Custom Color Dot Selection Styling */
+    .color-dot.active-dot {
+      border-color: #ffffff;
+      box-shadow: 0 0 0 2px #5288c1;
+    }
+    .dark .color-dot.active-dot {
+      border-color: #17212b;
+      box-shadow: 0 0 0 2px #ffffff;
+    }
+
+    /* Message Bubble Styling */
+    .message-wrapper { 
+      position: relative; 
+      display: flex; 
+      width: 100%; 
+      margin-bottom: 4px;
+    }
+    .message-bubble-container { 
+      position: relative; 
+      max-w-[75%]; 
+    }
+    .message-actions { 
+      display: none; 
+      position: absolute; 
+      top: -24px; 
+      right: 8px;
+      background: #17212b; 
+      border: 1px solid #101921; 
+      border-radius: 6px; 
+      padding: 2px 10px; 
+      gap: 10px; 
+      z-index: 40;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4);
+      align-items: center;
+    }
+    .dark .message-actions { background: #24303f; border-color: #2b394a; }
+    
+    @media (min-width: 769px) {
+      .message-bubble-container:hover .message-actions { display: flex; }
+    }
+
+    @media (max-width: 768px) {
+      .message-actions { 
+        display: flex; 
+        position: relative; 
+        top: auto; 
+        bottom: -4px; 
+        right: auto;
+        left: 4px;
+        background: transparent; 
+        border: none; 
+        box-shadow: none; 
+        padding: 0;
+        opacity: 0.5;
+      }
+      .justify-end .message-actions {
+        justify-content: flex-end;
+        left: auto;
+        right: 4px;
+      }
+    }
+
+    /* Dropdown Menu Styling */
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 56px;
+      background-color: #17212b;
+      min-width: 200px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+      z-index: 50;
+      border-radius: 12px;
+      border: 1px solid #24303f;
+      overflow: hidden;
+    }
+    .dropdown-menu a {
+      color: #dfdfdf;
+      padding: 10px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 13px;
+      transition: background-color 0.2s;
+    }
+    .dropdown-menu a:hover {
+      background-color: #24303f;
+    }
+    .dropdown-menu .danger-item {
+      color: #fca5a5;
+    }
+    .dropdown-menu .danger-item:hover {
+      background-color: #7f1d1d;
+      color: #fca5a5;
+    }
+    .show { display: block; }
+  </style>
+</head>
+<body class="bg-[#0e1621] text-gray-800 dark:text-gray-200 overflow-hidden select-none">
+
+  <div id="pwaToast" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-[#24303f] border border-[#3b82f6] p-4 rounded-xl shadow-2xl z-50 flex items-center gap-4 text-sm hidden">
+    <div>
+      <p class="font-semibold text-white">Unduh Aplikasi Taurus</p>
+      <p class="text-xs text-gray-400">Akses chat room langsung dari desktop Anda</p>
+    </div>
+    <div class="flex gap-2">
+      <button id="btnPwaInstall" class="bg-[#3b82f6] hover:bg-[#2563eb] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Install</button>
+      <button onclick="dismissPwaToast()" class="text-gray-400 hover:text-white text-xs px-2">Nanti</button>
+    </div>
+  </div>
+
+  <div id="drawerOverlay" onclick="toggleDrawer(false)" class="fixed inset-0 bg-black/40 z-40 hidden opacity-0 transition-opacity duration-200"></div>
+  
+  <div id="profileModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200" onclick="closeOnOverlay(event, 'profileModal')">
+    <div class="bg-white dark:bg-[#17212b] w-[340px] rounded-2xl overflow-hidden shadow-2xl p-6 text-center relative transform scale-95 transition-transform duration-200 modal-card border border-gray-100 dark:border-gray-800/40">
+      <button type="button" onclick="closeModal('profileModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white text-xl focus:outline-none">&times;</button>
+      
+      <form action="/edit_profile" method="POST" id="editProfileForm">
+        <div class="flex justify-center mb-3">
+          <div id="profAvatar" class="w-24 h-24 rounded-full bg-[#f07054] flex items-center justify-center font-semibold text-white text-3xl shadow-inner uppercase">
+            {{ user.username[0] if user and user.username else 'U' }}
+          </div>
+        </div>
+        <h3 id="profFullName" class="text-gray-900 dark:text-white font-medium text-lg mb-0.5">
+          {{ user.fullname if user and user.fullname else 'Taurus User' }}
+        </h3>
+        <p id="profRoleStatus" class="text-sm text-gray-400 mb-5">online</p>
+        
+        <div class="text-left space-y-3 border-t border-gray-100 dark:border-gray-800/60 pt-4 text-xs text-gray-600 dark:text-gray-300">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Username:</span>
+            <span id="profUsername" class="font-medium text-gray-900 dark:text-white">
+              @{{ user.username if user and user.username else 'taurus_user' }}
+            </span>
+          </div>
+          
+          <div class="flex justify-between items-center h-7">
+            <span class="text-gray-400">Tempat Lahir:</span>
+            <span id="viewPOB" class="font-medium text-gray-900 dark:text-white ProfileViewMode">
+              {{ user.tempat_lahir if user and user.tempat_lahir else '-' }}
+            </span>
+            <input type="text" name="tempat_lahir" id="inputPOB" value="{{ user.tempat_lahir if user and user.tempat_lahir else '' }}" class="hidden ProfileEditMode bg-gray-50 dark:bg-[#24313f] text-gray-900 dark:text-white px-2 py-1 rounded border border-gray-200 dark:border-gray-700 w-40 text-right focus:outline-none">
+          </div>
+          
+          <div class="flex justify-between items-center h-7">
+            <span class="text-gray-400">Tanggal Lahir:</span>
+            <span id="viewDOB" class="font-medium text-gray-900 dark:text-white ProfileViewMode">
+              {{ user.tanggal_lahir if user and user.tanggal_lahir else '-' }}
+            </span>
+            <input type="date" name="tanggal_lahir" id="inputDOB" value="{{ user.tanggal_lahir_raw if user and user.tanggal_lahir_raw else '' }}" class="hidden ProfileEditMode bg-gray-50 dark:bg-[#24313f] text-gray-900 dark:text-white px-2 py-1 rounded border border-gray-200 dark:border-gray-700 w-40 text-right focus:outline-none text-[11px]">
+          </div>
+          
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Role Akses:</span>
+            <span id="profRole" class="uppercase text-[10px] font-bold bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded">
+              {{ user.role if user and user.role else 'user' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-6 border-t border-gray-100 dark:border-gray-800/60 pt-4">
+          <button type="button" id="btnStartEdit" onclick="toggleProfileEditMode(true)" class="ProfileViewMode w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl text-xs font-medium transition shadow-sm">
+            ✏️ Edit Profil
+          </button>
+          
+          <div class="hidden ProfileEditMode flex gap-2">
+            <button type="button" onclick="toggleProfileEditMode(false)" class="w-1/2 bg-gray-100 dark:bg-[#24303f] hover:bg-gray-200 dark:hover:bg-[#2b394a] text-gray-700 dark:text-gray-200 py-2 rounded-xl text-xs font-medium transition">
+              Batal
+            </button>
+            <button type="submit" class="w-1/2 bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-xl text-xs font-medium transition shadow-sm">
+              💾 Simpan
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200" onclick="closeOnOverlay(event, 'settingsModal')">
+    <div class="bg-white dark:bg-[#17212b] w-[420px] h-[580px] rounded-2xl overflow-hidden shadow-2xl flex flex-col transform scale-95 transition-transform duration-200 modal-card border border-gray-100 dark:border-gray-800/60">
+      <div class="h-14 border-b border-gray-100 dark:border-gray-800/80 px-4 flex items-center justify-between select-none bg-white dark:bg-[#17212b]">
+        <div class="flex items-center gap-4">
+          <button id="settingsBackBtn" onclick="backToSettingsMain()" class="hidden text-gray-400 hover:text-gray-600 dark:hover:text-white transition text-lg focus:outline-none">
+            &larr;
+          </button>
+          <h3 id="settingsTitle" class="font-medium text-gray-800 dark:text-gray-100 text-base">
+            Pengaturan Pengguna
+          </h3>
+        </div>
+        <button onclick="closeModal('settingsModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-white text-xl font-light focus:outline-none">&times;</button>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto settings-scroll bg-white dark:bg-[#17212b]">
+        <div id="settingsMainMenu" class="p-2 space-y-0.5">
+          <div onclick="openSettingsSubMenu('notificationsSubMenu', 'Notifikasi dan Suara')" class="flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-[#24303f]/50 rounded-xl cursor-pointer transition group">
+            <div class="flex items-center gap-4">
+              <span class="text-base text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200">🔔</span>
+              <span class="text-sm text-gray-700 dark:text-gray-200">Notifikasi dan Suara</span>
+            </div>
+            <span class="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 text-sm">&gt;</span>
+          </div>
+
+          <div onclick="openSettingsSubMenu('privacySubMenu', 'Privasi dan Keamanan')" class="flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-[#24303f]/50 rounded-xl cursor-pointer transition group">
+            <div class="flex items-center gap-4">
+              <span class="text-base text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200">🔒</span>
+              <span class="text-sm text-gray-700 dark:text-gray-200">Privasi dan Keamanan</span>
+            </div>
+            <span class="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 text-sm">&gt;</span>
+          </div>
+
+          <div onclick="openSettingsSubMenu('chatSettingsSubMenu', 'Pengaturan Obrolan')" class="flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-[#24303f]/50 rounded-xl cursor-pointer transition group">
+            <div class="flex items-center gap-4">
+              <span class="text-base text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200">💬</span>
+              <span class="text-sm text-gray-700 dark:text-gray-200">Pengaturan Obrolan</span>
+            </div>
+            <span class="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 text-sm">&gt;</span>
+          </div>
+
+          <div onclick="openSettingsSubMenu('languageSubMenu', 'Language')" class="flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-[#24303f]/50 rounded-xl cursor-pointer transition group">
+            <div class="flex items-center gap-4">
+              <span class="text-base text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200">🌐</span>
+              <span class="text-sm text-gray-700 dark:text-gray-200">Bahasa (Language)</span>
+            </div>
+            <span id="currentLangLabel" class="text-gray-400 dark:text-gray-500 text-xs font-normal mr-1">English</span>
+          </div>
+        </div>
+
+        <div id="notificationsSubMenu" class="hidden p-4 space-y-6">
+          <div>
+            <h4 class="text-xs font-semibold text-[#5288c1] uppercase tracking-wide mb-3">Global settings</h4>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <span class="text-gray-400 dark:text-gray-500 text-base">🔔</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-200">Desktop notifications</span>
+                </div>
+                <label class="tg-switch"><input type="checkbox" checked><span class="tg-slider"></span></label>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <span class="text-gray-400 dark:text-gray-500 text-base">📺</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-200">Flash the taskbar icon</span>
+                </div>
+                <label class="tg-switch"><input type="checkbox" checked><span class="tg-slider"></span></label>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <span class="text-gray-400 dark:text-gray-500 text-base">🔊</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-200">Allow sound</span>
+                </div>
+                <label class="tg-switch"><input type="checkbox" checked><span class="tg-slider"></span></label>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <h4 class="text-xs font-semibold text-[#5288c1] uppercase tracking-wide">Volume</h4>
+            <div class="flex items-center gap-4">
+              <input type="range" id="volumeSlider" min="0" max="100" value="100" class="flex-1 accent-[#5288c1] h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer">
+              <span id="volumeVal" class="text-xs font-medium text-gray-500 dark:text-gray-400 w-8 text-right">100%</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="privacySubMenu" class="hidden p-4 space-y-6">
+          <div>
+            <h4 class="text-xs font-semibold text-[#5288c1] uppercase tracking-wide mb-3">Keamanan</h4>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex flex-col">
+                  <span class="text-sm text-gray-700 dark:text-gray-200">Verifikasi Dua Langkah</span>
+                  <span class="text-[11px] text-gray-400">Password tambahan saat masuk</span>
+                </div>
+                <label class="tg-switch"><input type="checkbox" id="twoStepToggle"><span class="tg-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="chatSettingsSubMenu" class="hidden p-4 space-y-6">
+          <div>
+            <h4 class="text-xs font-semibold text-[#5288c1] uppercase tracking-wide mb-3">Ukuran Teks Obrolan</h4>
+            <div class="flex items-center gap-4">
+              <input type="range" id="fontSizeSlider" min="12" max="22" value="14" class="flex-1 accent-[#5288c1] h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer">
+              <span id="fontSizeVal" class="text-xs font-medium text-gray-500 dark:text-gray-400 w-8 text-right">14px</span>
+            </div>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-[#5288c1] uppercase tracking-wide mb-3">Latar Belakang Chat</h4>
+            <div class="space-y-3">
+              <input type="file" id="wallpaperUpload" accept="image/*" class="hidden">
+              <button onclick="document.getElementById('wallpaperUpload').click()" class="w-full text-center text-xs bg-gray-100 dark:bg-[#24313f] hover:bg-gray-200 dark:hover:bg-[#354559] text-blue-500 dark:text-blue-300 border border-blue-900/10 dark:border-blue-900/50 py-2.5 rounded-xl transition">
+                📸 Pilih Gambar dari Berkas
+              </button>
+              <button id="resetWallpaperBtn" onclick="resetChatWallpaper()" class="w-full text-center text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2.5 rounded-xl transition hidden">
+                ❌ Kembalikan Latar Default
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="languageSubMenu" class="hidden flex flex-col h-full">
+          <div class="p-3 border-b border-gray-50 dark:border-gray-800/40 flex items-center gap-2 bg-gray-50/50 dark:bg-[#141c24]">
+            <span class="text-gray-400 text-sm pl-1">🔍</span>
+            <input type="text" id="langSearchInput" placeholder="Search" class="w-full bg-transparent text-sm text-gray-800 dark:text-white focus:outline-none placeholder-gray-400">
+          </div>
+          <div class="overflow-y-auto max-h-[260px] settings-scroll" id="languageListContainer">
+            <label class="flex items-center justify-between p-3.5 hover:bg-gray-50 dark:hover:bg-[#24303f]/40 cursor-pointer transition group">
+              <span class="text-sm font-medium text-gray-800 dark:text-gray-200 lang-name">English</span>
+              <input type="radio" name="tg-lang-option" value="English" class="accent-[#5288c1]" checked>
+            </label>
+            <label class="flex items-center justify-between p-3.5 hover:bg-gray-50 dark:hover:bg-[#24303f]/40 cursor-pointer transition group">
+              <span class="text-sm font-medium text-gray-800 dark:text-gray-200 lang-name">Bahasa Indonesia</span>
+              <input type="radio" name="tg-lang-option" value="Bahasa Indonesia" class="accent-[#5288c1]">
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="walletModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200" onclick="closeOnOverlay(event, 'walletModal')">
+    <div class="bg-white dark:bg-[#17212b] w-[360px] rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-200 modal-card border border-gray-100 dark:border-gray-800">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">💼 Taurus Wallet</h4>
+        <button onclick="closeModal('walletModal')" class="text-gray-400 text-xl">&times;</button>
+      </div>
+      <div class="text-center py-2">
+        <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Saldo Tersimpan</p>
+        <p class="text-3xl font-extrabold text-emerald-500 mb-6">Rp 750.000</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="groupModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200" onclick="closeOnOverlay(event, 'groupModal')">
+    <div class="bg-white dark:bg-[#17212b] w-[360px] rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-200 modal-card border border-gray-100 dark:border-gray-800">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">👥 Buat Grup Baru</h3>
+        <button onclick="closeModal('groupModal')" class="text-gray-400 text-xl">&times;</button>
+      </div>
+      <input type="text" placeholder="Masukkan nama grup..." class="w-full bg-gray-50 dark:bg-[#24313f] text-sm text-gray-900 dark:text-white px-4 py-2.5 rounded-xl focus:outline-none ring-1 ring-gray-200 dark:ring-gray-700 mb-4">
+      <button onclick="closeModal('groupModal')" class="w-full bg-[#5288c1] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-[#42709b] transition">Buat Sekarang</button>
+    </div>
+  </div>
+
+  <div id="channelModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200" onclick="closeOnOverlay(event, 'channelModal')">
+    <div class="bg-white dark:bg-[#17212b] w-[360px] rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-200 modal-card text-center space-y-3 border border-gray-100 dark:border-gray-800">
+      <div class="flex justify-end"><button onclick="closeModal('channelModal')" class="text-gray-400 text-xl">&times;</button></div>
+      <div class="text-3xl">📢</div>
+      <h4 class="font-bold text-gray-900 dark:text-white">Saluran Penyiaran</h4>
+      <button onclick="closeModal('channelModal')" class="w-full bg-[#5288c1] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-[#42709b] transition">Mulai Buat Saluran</button>
+    </div>
+  </div>
+
+  <div id="contactsModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200" onclick="closeOnOverlay(event, 'contactsModal')">
+    <div class="bg-white dark:bg-[#17212b] w-[360px] rounded-3xl p-5 shadow-2xl transform scale-95 transition-transform duration-200 modal-card border border-gray-100 dark:border-gray-800">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">📇 Daftar Kontak</h3>
+        <button onclick="closeModal('contactsModal')" class="text-gray-400 text-xl">&times;</button>
+      </div>
+      <p class="text-xs text-gray-400">Belum ada kontak yang ditambahkan.</p>
+    </div>
+  </div>
+
+  <div id="callsModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200" onclick="closeOnOverlay(event, 'callsModal')">
+    <div class="bg-white dark:bg-[#17212b] w-[340px] rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-200 modal-card text-center space-y-2 border border-gray-100 dark:border-gray-800">
+      <div class="flex justify-end"><button onclick="closeModal('callsModal')" class="text-gray-400 text-xl">&times;</button></div>
+      <div class="text-3xl">📞</div>
+      <p class="text-xs text-gray-400">Belum ada aktivitas panggilan suara maupun video terenkripsi.</p>
+    </div>
+  </div>
+
+  <div id="savedModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200" onclick="closeOnOverlay(event, 'savedModal')">
+    <div class="bg-white dark:bg-[#17212b] w-[380px] rounded-3xl overflow-hidden shadow-2xl transform scale-95 transition-transform duration-200 modal-card border border-gray-100 dark:border-gray-800">
+      <div class="p-4 bg-[#527da3] text-white flex items-center gap-3">
+        <span class="text-xl">🔖</span>
+        <div><h3 class="font-bold text-sm">Saved Messages</h3></div>
+        <button onclick="closeModal('savedModal')" class="ml-auto text-white text-xl focus:outline-none">&times;</button>
+      </div>
+      <div class="p-4 text-sm text-gray-400 text-center">Simpan berkas dan pesan rahasia di sini.</div>
+    </div>
+  </div>
+
+  <div id="telegramDrawer" class="fixed top-0 left-0 h-full w-[280px] bg-white dark:bg-[#17212b] text-gray-800 dark:text-gray-200 z-50 -translate-x-full drawer-transition shadow-2xl flex flex-col">
+    <div class="bg-[#527da3] dark:bg-[#24303f] p-4 text-white flex flex-col justify-end h-32">
+      <div class="w-12 h-12 rounded-full bg-[#2b5278] dark:bg-[#3b82f6] flex items-center justify-center font-bold text-lg shadow-sm mb-2 uppercase">
+        {{ user.username[0] if user and user.username else 'U' }}
+      </div>
+      <div class="leading-tight">
+        <h3 class="font-semibold text-sm">{{ user.fullname if user and user.fullname else 'Taurus User' }}</h3>
+        <p class="text-xs text-blue-100 dark:text-gray-400">Online &bull; {{ user.role if user and user.role else 'user' }}</p>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto py-2 space-y-0.5 text-sm font-medium select-none">
+      <div onclick="openProfileModal()" class="flex items-center gap-5 px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] cursor-pointer transition">
+        <span class="text-lg">👤</span> <span>My Profile</span>
+      </div>
+      <div onclick="openModal('walletModal')" class="flex items-center justify-between px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] cursor-pointer transition">
+        <div class="flex items-center gap-5"><span class="text-lg">💼</span> <span>Wallet</span></div>
+      </div>
+      <div onclick="openModal('groupModal')" class="flex items-center gap-5 px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] cursor-pointer transition">
+        <span class="text-lg">👥</span> <span>New Group</span>
+      </div>
+      <div onclick="openModal('channelModal')" class="flex items-center gap-5 px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] cursor-pointer transition">
+        <span class="text-lg">📢</span> <span>New Channel</span>
+      </div>
+      <div onclick="openModal('contactsModal')" class="flex items-center gap-5 px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] cursor-pointer transition">
+        <span class="text-lg">📇</span> <span>Contacts</span>
+      </div>
+      <div onclick="openModal('callsModal')" class="flex items-center gap-5 px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] cursor-pointer transition">
+        <span class="text-lg">📞</span> <span>Calls</span>
+      </div>
+      <div onclick="openModal('savedModal')" class="flex items-center gap-5 px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] cursor-pointer transition">
+        <span class="text-lg">🔖</span> <span>Saved Messages</span>
+      </div>
+      <div onclick="openModal('settingsModal')" class="flex items-center gap-5 px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] cursor-pointer transition">
+        <span class="text-lg">⚙️</span> <span>Settings</span>
+      </div>
+      <div class="flex items-center justify-between px-4 py-3 hover:bg-gray-100 dark:hover:bg-[#202b36] transition">
+        <div class="flex items-center gap-5"><span class="text-lg">🌙</span> <span>Night Mode</span></div>
+        <label class="tg-switch"><input type="checkbox" id="nightModeToggle" checked><span class="tg-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex h-screen w-screen text-white">
+    <aside class="w-80 border-r border-[#101921] bg-[#17212b] flex flex-col h-full hidden md:flex">
+      <div class="p-4 border-b border-[#101921] flex items-center gap-3">
+        <button onclick="toggleDrawer(true)" class="text-gray-400 hover:text-white transition text-lg focus:outline-none">&#9776;</button>
+        <h1 class="text-lg font-bold text-white tracking-wide flex-1">Taurus</h1>
+      </div>
+      <div class="flex-1 overflow-y-auto p-2 space-y-1">
+        <div class="flex items-center gap-3 p-3 bg-[#24303f] rounded-xl cursor-pointer">
+          <div class="w-10 h-10 rounded-full bg-[#3b82f6] flex items-center justify-center font-bold text-sm shadow">T</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">Taurus Chat Room</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full bg-[#0e1621]">
+      <header class="h-16 bg-[#17212b] px-4 md:px-6 flex items-center justify-between border-b border-[#101921] shadow-sm relative">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleDrawer(true)" class="md:hidden text-gray-400 hover:text-white transition text-lg focus:outline-none">&#9776;</button>
+          <h2 class="text-sm font-semibold text-white">Taurus Chat Room</h2>
+        </div>
+        
+        <div class="flex items-center">
+          <button onclick="toggleThreeDotMenu(event)" class="text-gray-400 hover:text-white text-xl p-2 rounded-full hover:bg-[#24303f] transition focus:outline-none">
+            &#8942;
+          </button>
+        </div>
+
+        <div id="threeDotMenu" class="dropdown-menu">
+          <a href="#" onclick="alert('Membuka Info Grup...')">ℹ️ Info Grup</a>
+          <a href="#" onclick="openModal('settingsModal')">🔊 Pengaturan Suara</a>
+          <div class="border-t border-[#24303f] my-1"></div>
+          <a href="#" onclick="clearMyChats(event)" class="danger-item">🧹 Hapus Semua Chat Saya</a>
+          <a href="#" onclick="clearAllChats(event)" class="danger-item font-semibold">❌ Hapus Chat Semua (Clear Room)</a>
+          <div class="border-t border-[#24303f] my-1"></div>
+          <a href="/logout" class="logout-item">🚪 Logout</a>
+        </div>
+      </header>
+
+      <div id="chat-box" class="flex-1 overflow-y-auto p-6 bg-[#0e1621] smooth-scroll" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; opacity: 0.97;">
+        <div id="chatMessagesInner" class="space-y-4 w-full"></div>
+      </div>
+
+      <footer class="p-3 bg-[#17212b] border-t border-[#101921] flex items-center gap-3">
+        <input type="text" id="msgInput" placeholder="Ketik pesan..." class="flex-1 bg-transparent border-0 focus:outline-none text-sm text-white placeholder-gray-500">
+        <button id="sendBtn" class="text-[#5288c1] hover:text-[#72b1e7] text-lg font-medium transition focus:outline-none px-2">
+          ✈️
+        </button>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    let activeSubMenuId = null;
+    const defaultWallpaper = "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')";
+
+    // --- LOGIKA TOGGLE MENU TITIK TIGA ---
+    function toggleThreeDotMenu(e) {
+        e.stopPropagation();
+        document.getElementById("threeDotMenu").classList.toggle("show");
+    }
+
+    window.addEventListener("click", function(e) {
+        const menu = document.getElementById("threeDotMenu");
+        if (menu && menu.classList.contains("show")) {
+            menu.classList.remove("show");
+        }
+    });
+
+    // --- MODAL & SIDEBAR INTERACTION ---
+    function toggleDrawer(open) {
+        const drawer = document.getElementById('telegramDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        if (open) {
+            drawer.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.add('opacity-100'), 10);
+        } else {
+            drawer.classList.add('-translate-x-full');
+            overlay.classList.remove('opacity-100');
+            setTimeout(() => overlay.classList.add('hidden'), 200);
+        }
+    }
+
+    function openModal(modalId) {
+        toggleDrawer(false);
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.add('opacity-100');
+            modal.querySelector('.modal-card').classList.remove('scale-95');
+        }, 10);
+    }
+
+    function openProfileModal() {
+        toggleDrawer(false);
+        openModal('profileModal');
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if(!modal) return;
+        modal.classList.remove('opacity-100');
+        modal.querySelector('.modal-card').classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    // --- DUA FUNGSI BARU UNTUK HAPUS MASSAL ---
+    function clearMyChats(e) {
+        e.preventDefault();
+        if (confirm("Apakah Anda yakin ingin menghapus semua pesan yang Anda kirim di room ini?")) {
+            fetch('/clear_my_chats', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' || data.status === 'cleared') {
+                    loadMessages();
+                } else {
+                    alert("Gagal menghapus chat Anda.");
+                }
+            })
+            .catch(err => console.error("Error clearing your chats:", err));
+        }
+    }
+
+    function clearAllChats(e) {
+        e.preventDefault();
+        if (confirm("⚠️ PERINGATAN: Tindakan ini akan mengosongkan seluruh isi room chat untuk semua orang. Lanjutkan?")) {
+            fetch('/clear_all_chats', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' || data.status === 'cleared') {
+                    loadMessages();
+                } else {
+                    alert("Gagal mengosongkan room.");
+                }
+            })
+            .catch(err => console.error("Error clearing all chats:", err));
+        }
+    }
+
+    function closeOnOverlay(e, modalId) {
+        if (e.target.id === modalId) closeModal(modalId);
+    }
+
+    function toggleProfileEditMode(isEdit) {
+        const viewElements = document.querySelectorAll('.ProfileViewMode');
+        const editElements = document.querySelectorAll('.ProfileEditMode');
+        if (isEdit) {
+            viewElements.forEach(el => el.classList.add('hidden'));
+            editElements.forEach(el => el.classList.remove('hidden'));
+        } else {
+            viewElements.forEach(el => el.classList.remove('hidden'));
+            editElements.forEach(el => el.classList.add('hidden'));
+        }
+    }
+
+    function openSettingsSubMenu(subMenuId, title) {
+        if (activeSubMenuId) document.getElementById(activeSubMenuId).classList.add('hidden');
+        document.getElementById('settingsMainMenu').classList.add('hidden');
+        document.getElementById(subMenuId).classList.remove('hidden');
+        document.getElementById('settingsTitle').innerText = title;
+        document.getElementById('settingsBackBtn').classList.remove('hidden');
+        activeSubMenuId = subMenuId;
+    }
+
+    function backToSettingsMain() {
+        if (activeSubMenuId) document.getElementById(activeSubMenuId).classList.add('hidden');
+        document.getElementById('settingsMainMenu').classList.remove('hidden');
+        document.getElementById('settingsBackBtn').classList.add('hidden');
+        document.getElementById('settingsTitle').innerText = "Pengaturan Pengguna";
+        activeSubMenuId = null;
+    }
+
+    // --- CHAT ENGINE ENGINE (AJAX & REALTIME POLLING) ---
+    const msgInput = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const chatBox = document.getElementById('chat-box');
+    const chatContainer = document.getElementById('chatMessagesInner');
+    const currentWindowUser = "{{ username }}";
+
+    function loadMessages() {
+        fetch('/get_messages')
+        .then(response => response.json())
+        .then(messages => {
+            let htmlContent = '';
+            
+            messages.forEach(msg => {
+                const isMe = (msg.user === currentWindowUser);
+                
+                htmlContent += `
+                    <div class="message-wrapper flex ${isMe ? 'justify-end' : 'justify-start'} w-full">
+                        <div class="message-bubble-container p-3 relative rounded-2xl shadow-md chat-bubble ${
+                            isMe 
+                            ? 'bg-gradient-to-b from-[#2b5278] to-[#244261] text-white rounded-tr-none' 
+                            : 'bg-[#182533] text-gray-100 rounded-tl-none'
+                        }">
+                            ${!isMe ? `<p class="text-[11px] font-bold text-blue-400 mb-0.5">@${msg.user}</p>` : ''}
+                            <p class="text-xs break-words leading-relaxed pr-6">${msg.content}</p>
+                            <span class="absolute bottom-1 right-2 text-[9px] text-gray-400/80">${msg.time}</span>
+                            
+                            ${isMe ? `
+                            <div class="message-actions">
+                                <button type="button" onclick="deleteMessage(${msg.id})" class="text-red-400 hover:text-red-500 text-[10px]">🗑️ Hapus</button>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            chatContainer.innerHTML = htmlContent;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(err => console.error("Error load chat:", err));
+    }
+
+    function sendMessage() {
+        const messageText = msgInput.value.trim();
+        if (messageText === '') return;
+
+        fetch('/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: messageText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "sent") {
+                msgInput.value = '';
+                loadMessages();
+            } else {
+                alert("Gagal kirim: " + (data.message || "Error"));
+            }
+        })
+        .catch(error => console.error("Error send:", error));
+    }
+
+    function deleteMessage(msgId) {
+        if (confirm("Hapus pesan ini?")) {
+            fetch(`/delete/${msgId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'deleted') loadMessages();
+            });
+        }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    msgInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadMessages();
+        setInterval(loadMessages, 2000);
+    });
+  </script>
+</body>
+</html>
